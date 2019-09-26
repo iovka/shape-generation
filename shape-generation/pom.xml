@@ -8,8 +8,40 @@
 	<version>0.1</version>
 	<packaging>jar</packaging>
 
-	<name>shexjava-inf</name>
-	<url>http://maven.apache.org</url>
+	<name>ShapeGenerator</name>
+	<description>An implementation of an api to automaticaly generate a shex or shacl shape.</description>
+	<url>https://github.com/jdusart/shape-generation/</url>
+
+	<licenses>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.fr.html</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Jérémie Dusart</name>
+			<email>jeremie.dusart@inria.fr</email>
+			<organization>INRIA</organization>
+			<organizationUrl>https://inria.fr/</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/jdusart/shape-generation</connection>
+		<developerConnection>scm:git:ssh://github.com:jdusart/shape-generation</developerConnection>
+		<url>https://github.com/jdusart/shape-generation/tree/master</url>
+	</scm>
+
+	<!-- Used for the deployment on maven central repository -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<!-- Done -->
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,6 +101,67 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- The following plugins are used for the deployment on maven central repository -->
+			<plugin>
+				<!-- This plugin configure the release process. Autorealease is activated. -->
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- This plugin generates the jars -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- This plugin generates the javadocs.  -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+      				<source>8</source>
+	            	<additionalparam>-Xdoclint:none</additionalparam>
+	            </configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- This plugin sign the release -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Done -->
 		</plugins>
 	</build>
 </project>
