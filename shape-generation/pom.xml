@@ -47,8 +47,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<antlr.version>4.7.1</antlr.version>
 		<rdf4j.version>2.5.2</rdf4j.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
 	<dependencies>
@@ -83,6 +81,15 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr4-maven-plugin</artifactId>
 				<version>${antlr.version}</version>
@@ -101,7 +108,16 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- The following plugins are used for the deployment on maven central repository -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12.4</version>
+				<configuration>
+					<argLine>-Dfile.encoding=UTF-8</argLine>
+				</configuration>
+			</plugin>
+			<!-- The following plugins are used for the deployment on maven central 
+				repository -->
 			<plugin>
 				<!-- This plugin configure the release process. Autorealease is activated. -->
 				<groupId>org.sonatype.plugins</groupId>
@@ -129,14 +145,14 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- This plugin generates the javadocs.  -->
+				<!-- This plugin generates the javadocs. -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
 				<configuration>
-      				<source>8</source>
-	            	<additionalparam>-Xdoclint:none</additionalparam>
-	            </configuration>
+					<source>8</source>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
