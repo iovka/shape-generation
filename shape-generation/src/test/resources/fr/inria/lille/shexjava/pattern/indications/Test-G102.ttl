@@ -1,0 +1,18 @@
+PREFIX ab:      <http://a.b/>
+PREFIX exorg:   <http://ex.org/>
+PREFIX excom:   <http://ex.com/>
+PREFIX other:   <http://other.com/>
+PREFIX p:       <http://pr.op/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+ab:n1 
+	p:nest [ p:test "0"^^xsd:integer ; other: "y" ] ;
+	other: "x" .
+	
+ab:n2
+	p:nest [ p:test "0"^^xsd:integer ; other: "z" ] ;
+	other: "u" .
+		
+ab:n3
+	p:nest "literal" ;
+	other: "t" .

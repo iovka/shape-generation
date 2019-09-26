@@ -1,0 +1,22 @@
+PREFIX ab:      <http://a.b/>
+PREFIX exorg:   <http://ex.org/>
+PREFIX excom:   <http://ex.com/>
+PREFIX other:   <http://other.com/>
+PREFIX p:       <http://pr.op/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+
+ab:n1 
+	exorg:p "y" ;
+    exorg:p "x" ;
+    exorg:q ab:v13 .
+
+ab:n2 
+	exorg:p "z" ;
+    exorg:s "1"^^xsd:integer ;
+    exorg:r ab:v23 .
+
+ab:n3 
+	other: _:b ;
+    exorg:q ab:v32 ;
+    exorg:q ab:v33 .

@@ -1,0 +1,29 @@
+PREFIX ex:   <http://ex.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX p:    <http://ex.org/p>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+ex:alice rdf:type ex:User ;
+    foaf:givenName  "Alice";
+    foaf:familyName "Smith" ;
+    p:interest ex:lod , ex:semweb .
+
+ex:carol rdf:type ex:User ;
+    foaf:givenName  "Carol";
+    foaf:familyName "Sym" ;
+    p:birthdate "1980-03-10"^^xsd:date ;
+    p:interest ex:lod .
+ 
+ex:john rdf:type ex:User ;
+    foaf:givenName  "John";
+    foaf:familyName "Doe" ;
+    foaf:knows ex:carol, ex:alice ;
+    p:interest ex:semweb .
+	
+ex:lod rdf:type ex:Topic ;
+    p:name "Linked Open Data" ;
+    p:relatedTo ex:semweb .
+    
+ex:semweb rdf:type ex:Topic ;
+    p:name "Semantic Web" .

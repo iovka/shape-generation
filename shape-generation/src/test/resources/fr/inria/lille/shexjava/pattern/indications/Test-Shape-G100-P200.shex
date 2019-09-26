@@ -1,0 +1,13 @@
+PREFIX ab:      <http://a.b/>
+PREFIX exorg:   <http://ex.org/>
+PREFIX excom:   <http://ex.com/>
+PREFIX other:   <http://other.com/>
+PREFIX p:       <http://pr.op/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+exorg:Shape {
+	exorg:s [ "1"^^xsd:integer ] ? ; 
+	exorg:p xsd:string * ;
+	exorg:q IRI * ;
+	exorg:r IRI ?
+}

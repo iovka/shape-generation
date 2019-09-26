@@ -1,0 +1,12 @@
+PREFIX ab:      <http://a.b/>
+PREFIX exorg:   <http://ex.org/>
+PREFIX excom:   <http://ex.com/>
+PREFIX other:   <http://other.com/>
+PREFIX p:       <http://pr.op/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+exorg:Shape {
+	p:nest {
+		p:test xsd:string
+	}
+}
