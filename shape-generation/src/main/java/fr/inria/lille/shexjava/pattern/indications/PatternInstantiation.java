@@ -211,12 +211,19 @@ public class PatternInstantiation implements ValueSelectorInstantiation {
 	// ------------------------------------------------------------------------------------------------
 	// For testing
 	// ------------------------------------------------------------------------------------------------
-	Set<RDFTerm> getSample () {
+	
+	public Set<RDFTerm> getSample () {
 		Set<RDFTerm> result = new HashSet<>(votingSample);
 		result.addAll(literalsSample);
 		return result;
 	}
+	
 
+	public Graph getGraph() {
+		return graph;
+	}
+	
+	
 	@Override
 	public String toString() {
 		return "PatternInstantiation [origin=" + origin + ", votingSample=" + votingSample + ", literalsSample="

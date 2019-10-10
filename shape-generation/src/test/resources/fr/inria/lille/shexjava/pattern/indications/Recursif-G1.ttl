@@ -1,0 +1,10 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX :   <http://ex.com/>
+
+:n1 a foaf:Person;
+	:name [ a foaf:name; foaf:givenName "Thomas"; foaf:familyName "Anderson"] .
+
+:n2 a foaf:Person;
+	:name [ a foaf:name; foaf:givenName "Ellen"; foaf:familyName "Ripley"] .
+

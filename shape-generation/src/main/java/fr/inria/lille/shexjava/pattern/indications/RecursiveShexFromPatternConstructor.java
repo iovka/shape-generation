@@ -20,20 +20,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
 
 import fr.inria.lille.shexjava.GlobalFactory;
+import fr.inria.lille.shexjava.pattern.ProjectFactory;
+import fr.inria.lille.shexjava.schema.Label;
 import fr.inria.lille.shexjava.schema.abstrsynt.Annotation;
 import fr.inria.lille.shexjava.schema.abstrsynt.EachOf;
 import fr.inria.lille.shexjava.schema.abstrsynt.EmptyTripleExpression;
 import fr.inria.lille.shexjava.schema.abstrsynt.NodeConstraint;
 import fr.inria.lille.shexjava.schema.abstrsynt.RepeatedTripleExpression;
 import fr.inria.lille.shexjava.schema.abstrsynt.Shape;
+import fr.inria.lille.shexjava.schema.abstrsynt.ShapeAnd;
 import fr.inria.lille.shexjava.schema.abstrsynt.ShapeExpr;
+import fr.inria.lille.shexjava.schema.abstrsynt.ShapeExprRef;
 import fr.inria.lille.shexjava.schema.abstrsynt.ShapeOr;
 import fr.inria.lille.shexjava.schema.abstrsynt.TCProperty;
 import fr.inria.lille.shexjava.schema.abstrsynt.TripleConstraint;
@@ -42,12 +52,29 @@ import fr.inria.lille.shexjava.schema.concrsynt.Constraint;
 import fr.inria.lille.shexjava.schema.concrsynt.ValueSetValueConstraint;
 import fr.inria.lille.shexjava.util.Interval;
 
-public class ShexFromPatternConstructor {
+public class RecursiveShexFromPatternConstructor {
 	
 	public static final IRI FREQ_ANNOTATION = GlobalFactory.RDFFactory.createIRI("http://inria.fr/shexjapp/freq");
+	public static final IRI RDF_TYPE = GlobalFactory.RDFFactory.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	
-	public ShapeExpr construct (PatternInstantiation pattern) {
-		return visit(pattern);
+	protected Graph graph;
+	protected Map<IRI,Label> generatedName;
+	
+	public Map<Label,ShapeExpr> construct (Graph graph, Map<IRI,PatternInstantiation> patterns) {
+		this.graph = graph;
+
+		generatedName = new HashMap<>();
+		for (IRI type:patterns.keySet())
+			generatedName.put(type, new Label(GlobalFactory.RDFFactory.createIRI("http://shex.gen/"+getLastPartOfIRI(type))));
+
+		Map<Label,ShapeExpr> results = new HashMap<>();
+		for (IRI type:patterns.keySet()) {
+			ShapeExpr res = visit(patterns.get(type));
+			res.setId(generatedName.get(type));
+			results.put(generatedName.get(type),res);
+		}
+
+		return results;
 	}
 
 	protected ShapeExpr visit(PatternInstantiation pattern) {
@@ -100,31 +127,53 @@ public class ShexFromPatternConstructor {
 
 	}
 
-
+	// ici on fait les liens
 	protected ShapeExpr visit(ValueSelectorInstantiation vsel) {
-		Constraint c = null;
 		if (vsel instanceof ValueSelectorListValuesInstantiation) {
 			ValueSelectorListValuesInstantiation lv = (ValueSelectorListValuesInstantiation) vsel;
-			c = new ValueSetValueConstraint(lv.getValues(), Collections.emptySet());
+			Constraint c = new ValueSetValueConstraint(lv.getValues(), Collections.emptySet());
+			return new NodeConstraint(Collections.singletonList(c));
 		} 
 		if (vsel instanceof ValueSelectorValueKindInstantiation) {
 			ValueSelectorValueKindInstantiation vk = (ValueSelectorValueKindInstantiation) vsel;
-			UniformValueConstraint uc = vk.getConstraint();
-			c = uc.getConstraint();
+			NodeConstraint kindConst = new NodeConstraint(Collections.singletonList(vk.getConstraint().getConstraint()));
+			
+			Set<IRI> types = getRDFType(vk.getSample());
+			if (types.size()==0) {
+				return kindConst;
+			} else {	
+				ShapeOr seOr = new ShapeOr(types.stream().map(type -> new ShapeExprRef(generatedName.get(type))).collect(Collectors.toList()));
+				List<ShapeExpr> subExprs = new ArrayList<>();
+				subExprs.add(kindConst);
+				subExprs.add(seOr);
+				return new ShapeAnd(subExprs);
+			}
 		}
 
-		if (c == null) {
-			if (vsel instanceof PatternInstantiation) {
-				return this.visit((PatternInstantiation) vsel);
-			} else {
-				String message = String.format("Unsupported subclass of %s : %s [%s]", 
-						ValueSelectorInstantiation.class, vsel.getClass(), vsel.toString());
-				throw new UnsupportedOperationException(message);
-			}
+		if (vsel instanceof PatternInstantiation) {
+			return this.visit((PatternInstantiation) vsel);
 		} else {
-			return new NodeConstraint(Collections.singletonList(c));
+			String message = String.format("Unsupported subclass of %s : %s [%s]", 
+					ValueSelectorInstantiation.class, vsel.getClass(), vsel.toString());
+			throw new UnsupportedOperationException(message);
 		}
+
+	}
+	
+	protected Set<IRI> getRDFType(Collection<RDFTerm> sample) {
+		HashSet<IRI> results = new HashSet<>();
+		for (RDFTerm node:sample) {
+			if (node instanceof BlankNodeOrIRI) {
+				graph.stream((BlankNodeOrIRI) node, RDF_TYPE, null).map(tr->tr.getObject())
+					.filter(obj -> obj instanceof IRI).forEach(obj -> results.add((IRI) obj));
+			}
+		}
+		return results.stream().filter(type -> generatedName.containsKey(type)).collect(Collectors.toSet());
+	}
+	
+	private String getLastPartOfIRI(IRI iri) {
+		org.eclipse.rdf4j.model.IRI val = (org.eclipse.rdf4j.model.IRI) ProjectFactory.factory.asValue(iri);
+		return val.getLocalName();
 	}
 
-	
 }

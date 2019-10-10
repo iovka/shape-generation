@@ -27,7 +27,7 @@ import fr.inria.lille.shexjava.schema.parsing.GenParser;
 
 public class TestUtil {
 
-	private static Graph loadData (String resourceName) throws IOException {
+	public static Graph loadData (String resourceName) throws IOException {
 		URL file = TestUtil.class.getResource(resourceName);
 		InputStream inputStream = file.openStream();
 		Model model = Rio.parse(inputStream, file.toString(), RDFFormat.TURTLE);
