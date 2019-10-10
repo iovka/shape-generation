@@ -1,7 +1,6 @@
 package fr.inria.lille.shexjava.pattern.indications;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +26,8 @@ public class TestPatternInstantiationRecursif {
 	public void test_G100_P200_() throws Exception {		
 		Graph g = TestUtil.loadData("Recursif-G1.ttl");
 		Pattern pattern = parser.getPattern(new ByteArrayInputStream("{ a [__]; ~ __}".getBytes()));
-		System.out.println(pattern);
 
 		Set<IRI> types = g.stream(null,RDF_TYPE,null).map(tr->(IRI) tr.getObject()).collect(Collectors.toSet());
-		System.out.println(types);
 		
 		
 		Map<IRI,PatternInstantiation> patterns = new HashMap<>();
@@ -39,12 +36,10 @@ public class TestPatternInstantiationRecursif {
 					.collect(Collectors.toList());
 			patterns.put(type, new PatternInstantiation(pattern, sample, g));
 		}
-		System.out.println(patterns);
 		
 		RecursiveShexFromPatternConstructor constructor = new RecursiveShexFromPatternConstructor();
 		
-		Map<Label, ShapeExpr> rules = constructor.construct(g, patterns);
-		System.out.println(rules);
+		Map<Label, ShapeExpr> rules = constructor.construct(g, patterns, "http://shex.gen/");
 		System.out.println(serializer.ToShexC(rules));
 	}
 	

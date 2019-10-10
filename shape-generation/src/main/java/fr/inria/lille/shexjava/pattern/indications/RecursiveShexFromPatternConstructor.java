@@ -60,12 +60,12 @@ public class RecursiveShexFromPatternConstructor {
 	protected Graph graph;
 	protected Map<IRI,Label> generatedName;
 	
-	public Map<Label,ShapeExpr> construct (Graph graph, Map<IRI,PatternInstantiation> patterns) {
+	public Map<Label,ShapeExpr> construct (Graph graph, Map<IRI,PatternInstantiation> patterns, String prefixName) {
 		this.graph = graph;
 
 		generatedName = new HashMap<>();
 		for (IRI type:patterns.keySet())
-			generatedName.put(type, new Label(GlobalFactory.RDFFactory.createIRI("http://shex.gen/"+getLastPartOfIRI(type))));
+			generatedName.put(type, new Label(GlobalFactory.RDFFactory.createIRI(prefixName+getLastPartOfIRI(type))));
 
 		Map<Label,ShapeExpr> results = new HashMap<>();
 		for (IRI type:patterns.keySet()) {
@@ -132,22 +132,13 @@ public class RecursiveShexFromPatternConstructor {
 		if (vsel instanceof ValueSelectorListValuesInstantiation) {
 			ValueSelectorListValuesInstantiation lv = (ValueSelectorListValuesInstantiation) vsel;
 			Constraint c = new ValueSetValueConstraint(lv.getValues(), Collections.emptySet());
-			return new NodeConstraint(Collections.singletonList(c));
+			NodeConstraint kindConst = new NodeConstraint(Collections.singletonList(c));
+			return createRecursion(kindConst,lv.getSample());
 		} 
 		if (vsel instanceof ValueSelectorValueKindInstantiation) {
 			ValueSelectorValueKindInstantiation vk = (ValueSelectorValueKindInstantiation) vsel;
 			NodeConstraint kindConst = new NodeConstraint(Collections.singletonList(vk.getConstraint().getConstraint()));
-			
-			Set<IRI> types = getRDFType(vk.getSample());
-			if (types.size()==0) {
-				return kindConst;
-			} else {	
-				ShapeOr seOr = new ShapeOr(types.stream().map(type -> new ShapeExprRef(generatedName.get(type))).collect(Collectors.toList()));
-				List<ShapeExpr> subExprs = new ArrayList<>();
-				subExprs.add(kindConst);
-				subExprs.add(seOr);
-				return new ShapeAnd(subExprs);
-			}
+			return createRecursion(kindConst,vk.getSample());
 		}
 
 		if (vsel instanceof PatternInstantiation) {
@@ -158,6 +149,19 @@ public class RecursiveShexFromPatternConstructor {
 			throw new UnsupportedOperationException(message);
 		}
 
+	}
+	
+	protected ShapeExpr createRecursion(NodeConstraint nConst, Collection<RDFTerm> sample) {
+		Set<IRI> types = getRDFType(sample);
+		if (types.size()==0) {
+			return nConst;
+		} else {	
+			ShapeOr seOr = new ShapeOr(types.stream().map(type -> new ShapeExprRef(generatedName.get(type))).collect(Collectors.toList()));
+			List<ShapeExpr> subExprs = new ArrayList<>();
+			subExprs.add(nConst);
+			subExprs.add(seOr);
+			return new ShapeAnd(subExprs);
+		}
 	}
 	
 	protected Set<IRI> getRDFType(Collection<RDFTerm> sample) {
