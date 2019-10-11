@@ -64,8 +64,17 @@ public class RecursiveShexFromPatternConstructor {
 		this.graph = graph;
 
 		generatedName = new HashMap<>();
-		for (IRI type:patterns.keySet())
-			generatedName.put(type, new Label(GlobalFactory.RDFFactory.createIRI(prefixName+getLastPartOfIRI(type))));
+		Set<String> visitedName = new HashSet<>();
+		for (IRI type:patterns.keySet()) {
+			String labelIRI = prefixName+getLastPartOfIRI(type);
+			if (visitedName.contains(labelIRI)) {
+				int i=0;
+				while (visitedName.contains(labelIRI+i)) i++;
+				labelIRI += i;
+			}
+			visitedName.add(labelIRI);
+			generatedName.put(type, new Label(GlobalFactory.RDFFactory.createIRI(labelIRI)));
+		}
 
 		Map<Label,ShapeExpr> results = new HashMap<>();
 		for (IRI type:patterns.keySet()) {
@@ -152,7 +161,7 @@ public class RecursiveShexFromPatternConstructor {
 	}
 	
 	protected ShapeExpr createRecursion(NodeConstraint nConst, Collection<RDFTerm> sample) {
-		Set<IRI> types = getRDFType(sample);
+		Set<IRI> types = getRDFTypeFoundInSample(sample);
 		if (types.size()==0) {
 			return nConst;
 		} else {	
@@ -164,7 +173,7 @@ public class RecursiveShexFromPatternConstructor {
 		}
 	}
 	
-	protected Set<IRI> getRDFType(Collection<RDFTerm> sample) {
+	protected Set<IRI> getRDFTypeFoundInSample(Collection<RDFTerm> sample) {
 		HashSet<IRI> results = new HashSet<>();
 		for (RDFTerm node:sample) {
 			if (node instanceof BlankNodeOrIRI) {
